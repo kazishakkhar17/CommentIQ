@@ -2,10 +2,17 @@
 
 Detects emotional intent in Bengali, English, and Romanized-Bengali Facebook comments and generates contextually appropriate auto-replies. Built in 5 days as an end-to-end ML + agentic AI project.
 
+## Screenshots
+
 **Live Demo:** Run locally with `uvicorn api:app --host 0.0.0.0 --port 7860`
 
----
 
+<img width="1902" height="859" alt="Screenshot 2026-03-17 031129" src="https://github.com/user-attachments/assets/71c16d4c-b703-456e-a10b-09d1896f0f70" />
+
+<img width="1866" height="867" alt="Screenshot 2026-03-17 031151" src="https://github.com/user-attachments/assets/fb035905-bfa4-4166-a137-4ac526a22089" />
+<img width="1891" height="844" alt="Screenshot 2026-03-17 031231" src="https://github.com/user-attachments/assets/580b26c5-c3f6-470a-88d3-d52d7a5d4657" />
+
+---
 ## What It Does
 
 Bangladeshi businesses receive hundreds of Facebook comments daily in Bengali, English, and code-mixed language. Existing tools fail because they don't understand Bengali sarcasm, miss cultural passive-aggression, and can't handle code-mixed text.
