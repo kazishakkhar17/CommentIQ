@@ -1,0 +1,7 @@
+models/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+data/raw/

@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CommentIQ</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  background: #f5f5f5;
+  color: #1a1a1a;
+  min-height: 100vh;
+}
+
+.app-header {
+  background: #fff;
+  border-bottom: 1px solid #e5e5e5;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.app-header .logo {
+  width: 32px; height: 32px;
+  background: #1D9E75;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 14px;
+}
+.app-header h1 { font-size: 16px; font-weight: 600; color: #1a1a1a; }
+.app-header p  { font-size: 12px; color: #888; margin-left: auto; }
+
+.tabs-bar {
+  background: #fff;
+  border-bottom: 1px solid #e5e5e5;
+  display: flex;
+  padding: 0 24px;
+}
+.tab-btn {
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #888;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+}
+.tab-btn.active { color: #1D9E75; border-bottom-color: #1D9E75; font-weight: 500; }
+.notif {
+  background: #E24B4A; color: white;
+  border-radius: 10px; font-size: 10px;
+  padding: 1px 5px; min-width: 16px;
+  text-align: center;
+}
+
+.page { display: none; padding: 24px; max-width: 960px; margin: 0 auto; }
+.page.active { display: block; }
+
+/* ── USER PANEL ── */
+.fb-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e5e5;
+  overflow: hidden;
+}
+.fb-card-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex; align-items: center; gap: 10px;
+}
+.page-avatar {
+  width: 38px; height: 38px;
+  background: #1D9E75;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 14px;
+}
+.page-name   { font-size: 14px; font-weight: 600; }
+.page-sub    { font-size: 11px; color: #888; }
+.post-body   { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: #333; line-height: 1.6; }
+.chat-feed   { padding: 12px 16px; min-height: 180px; max-height: 320px; overflow-y: auto; }
+.msg-row     { display: flex; gap: 8px; margin-bottom: 10px; align-items: flex-end; }
+.msg-row.out { flex-direction: row-reverse; }
+.avatar      { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+.av-u  { background: #dbeafe; color: #1e40af; }
+.av-b  { background: #d1fae5; color: #065f46; }
+.bubble { max-width: 72%; padding: 8px 12px; font-size: 13px; line-height: 1.5; }
+.bubble-u { background: #f0f0f0; border-radius: 16px 16px 16px 4px; color: #1a1a1a; }
+.bubble-b { background: #d1fae5; border-radius: 16px 16px 4px 16px; color: #065f46; }
+.bubble-p { background: #f0f0f0; border-radius: 16px 16px 16px 4px; color: #999; font-style: italic; }
+.typing-dot { display: inline-flex; gap: 3px; padding: 2px 0; }
+.typing-dot span { width: 5px; height: 5px; border-radius: 50%; background: #aaa; animation: blink 1.2s infinite; }
+.typing-dot span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0%,80%,100%{opacity:0.2} 40%{opacity:1} }
+.comment-input-row {
+  display: flex; gap: 8px; padding: 12px 16px;
+  border-top: 1px solid #f0f0f0;
+  align-items: center;
+}
+.comment-input-row input {
+  flex: 1; padding: 9px 14px;
+  border-radius: 20px;
+  border: 1px solid #e0e0e0;
+  background: #f8f8f8;
+  font-size: 13px;
+  outline: none;
+  color: #1a1a1a;
+}
+.comment-input-row input:focus { border-color: #1D9E75; background: #fff; }
+.post-btn {
+  padding: 9px 18px;
+  border-radius: 20px;
+  border: none;
+  background: #1D9E75;
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.post-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.hint { font-size: 11px; color: #aaa; padding: 0 16px 12px; }
+
+/* ── ADMIN INBOX ── */
+.inbox-layout { display: grid; grid-template-columns: 320px 1fr; gap: 16px; align-items: start; }
+.inbox-panel { background: #fff; border-radius: 12px; border: 1px solid #e5e5e5; overflow: hidden; }
+.panel-header { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; font-size: 13px; font-weight: 600; color: #1a1a1a; display: flex; align-items: center; justify-content: space-between; }
+.inbox-item { padding: 12px 16px; border-bottom: 1px solid #f5f5f5; cursor: pointer; transition: background 0.1s; }
+.inbox-item:hover { background: #f8fffe; }
+.inbox-item.selected { background: #f0fdf8; border-left: 3px solid #1D9E75; }
+.inbox-item:last-child { border-bottom: none; }
+.inbox-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
+.unread-dot { width: 7px; height: 7px; border-radius: 50%; background: #1D9E75; flex-shrink: 0; }
+.inbox-time { font-size: 11px; color: #aaa; margin-left: auto; }
+.inbox-text { font-size: 13px; color: #444; line-height: 1.4; }
+.empty-state { padding: 32px 16px; text-align: center; color: #bbb; font-size: 13px; }
+
+.detail-panel { background: #fff; border-radius: 12px; border: 1px solid #e5e5e5; overflow: hidden; }
+.detail-body { padding: 16px; }
+.detail-comment { background: #f8f8f8; border-radius: 8px; padding: 10px 12px; font-size: 13px; color: #333; margin-bottom: 14px; line-height: 1.5; }
+.section-label { font-size: 11px; font-weight: 600; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.emotion-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.conf-bar { height: 5px; border-radius: 3px; background: #f0f0f0; margin-bottom: 12px; }
+.conf-fill { height: 100%; border-radius: 3px; background: #1D9E75; transition: width 0.3s; }
+.tools-row { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
+.tool-chip { font-size: 11px; padding: 3px 8px; border-radius: 6px; background: #f0f0f0; color: #555; }
+.adj-list { margin-bottom: 14px; }
+.adj-item { font-size: 12px; color: #666; padding: 2px 0; }
+.reply-area { width: 100%; border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; font-size: 13px; font-family: inherit; color: #1a1a1a; resize: vertical; outline: none; min-height: 80px; }
+.reply-area:focus { border-color: #1D9E75; }
+.reply-actions { display: flex; gap: 8px; margin-top: 8px; }
+.btn-send { flex: 1; padding: 9px; border-radius: 8px; border: none; background: #1D9E75; color: white; font-size: 13px; font-weight: 500; cursor: pointer; }
+.btn-send:hover { background: #178a63; }
+
+/* ── HISTORY ── */
+.hist-list { background: #fff; border-radius: 12px; border: 1px solid #e5e5e5; overflow: hidden; }
+.hist-item { padding: 14px 16px; border-bottom: 1px solid #f5f5f5; }
+.hist-item:last-child { border-bottom: none; }
+.hist-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.hist-time { font-size: 11px; color: #aaa; margin-left: auto; }
+.hist-comment { font-size: 13px; color: #444; margin-bottom: 4px; }
+.hist-reply { font-size: 13px; color: #1D9E75; }
+.hist-noreply { font-size: 13px; color: #bbb; font-style: italic; }
+
+/* ── BADGES ── */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 500; }
+.b-gp   { background: #d1fae5; color: #065f46; }
+.b-gn   { background: #fee2e2; color: #991b1b; }
+.b-sar  { background: #fef3c7; color: #92400e; }
+.b-pa   { background: #fce7f3; color: #9d174d; }
+.b-ang  { background: #fee2e2; color: #7f1d1d; }
+.b-con  { background: #dbeafe; color: #1e3a8a; }
+.b-neu  { background: #f3f4f6; color: #374151; }
+.b-q    { background: #ede9fe; color: #5b21b6; }
+.b-spam { background: #e5e7eb; color: #374151; }
+.b-auto { background: #d1fae5; color: #065f46; }
+.b-human{ background: #fef3c7; color: #92400e; }
+.b-flag { background: #f3f4f6; color: #6b7280; }
+
+@media (max-width: 640px) {
+  .inbox-layout { grid-template-columns: 1fr; }
+  .page { padding: 12px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="logo">IQ</div>
+  <div>
+    <h1>CommentIQ</h1>
+  </div>
+  <p>Emotional intelligence for Facebook comments</p>
+</div>
+
+<div class="tabs-bar">
+  <button class="tab-btn active" onclick="switchTab('user')">User panel</button>
+  <button class="tab-btn" onclick="switchTab('admin')" id="tab-admin">
+    Admin inbox
+    <span class="notif" id="inbox-notif" style="display:none">0</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('history')">History</button>
+</div>
+
+<!-- USER PANEL -->
+<div class="page active" id="page-user">
+  <div class="fb-card">
+    <div class="fb-card-header">
+      <div class="page-avatar">D</div>
+      <div>
+        <div class="page-name">Daraz Bangladesh</div>
+        <div class="page-sub">Official Page &bull; Facebook</div>
+      </div>
+    </div>
+    <div class="post-body">
+      New arrivals this week! Check out our latest collection. Share your thoughts below! 🛍️
+    </div>
+    <div class="chat-feed" id="chat-feed"></div>
+    <div class="comment-input-row">
+      <div class="av-u avatar" style="flex-shrink:0">U</div>
+      <input id="user-input" placeholder="Write a comment..." onkeydown="if(event.key==='Enter')postComment()" />
+      <button class="post-btn" id="post-btn" onclick="postComment()">Post</button>
+    </div>
+    <div class="hint">Try: "দারুণ product ❤️" &bull; "darun na bhai" &bull; "ডেলিভারি চার্জ কত?" &bull; "Visit my page for free gifts!!!" &bull; "not happy at all"</div>
+  </div>
+</div>
+
+<!-- ADMIN INBOX -->
+<div class="page" id="page-admin">
+  <div class="inbox-layout">
+    <div class="inbox-panel">
+      <div class="panel-header">
+        Pending review
+        <span id="pending-count" style="font-size:12px; color:#888; font-weight:400">0 messages</span>
+      </div>
+      <div id="inbox-list"><div class="empty-state">No pending messages</div></div>
+    </div>
+    <div class="detail-panel" id="detail-panel">
+      <div class="panel-header">Message review</div>
+      <div class="detail-body">
+        <div class="empty-state">Select a message from the inbox</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div class="page" id="page-history">
+  <div class="hist-list" id="hist-list">
+    <div class="empty-state" style="padding:32px">No history yet</div>
+  </div>
+</div>
+
+<script>
+const API = window.location.origin;
+
+const EMOTION_MAP = {
+  GP:       { label: 'Genuine positive',   cls: 'b-gp'   },
+  GN:       { label: 'Genuine negative',   cls: 'b-gn'   },
+  SAR:      { label: 'Sarcastic',          cls: 'b-sar'  },
+  PA:       { label: 'Passive-aggressive', cls: 'b-pa'   },
+  ANG:      { label: 'Angry',             cls: 'b-ang'  },
+  CON:      { label: 'Concerned',         cls: 'b-con'  },
+  NEU:      { label: 'Neutral',           cls: 'b-neu'  },
+  QUESTION: { label: 'Question',          cls: 'b-q'    },
+  SPAM:     { label: 'Spam',             cls: 'b-spam' },
+};
+
+let feed = [], inbox = [], history = [], selectedId = null;
+
+function em(e) { return EMOTION_MAP[e] || EMOTION_MAP['NEU']; }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function badge(e) { const x=em(e); return `<span class="badge ${x.cls}">${x.label}</span>`; }
+function decBadge(d) {
+  if (d==='AUTO_REPLY')        return `<span class="badge b-auto">Auto reply</span>`;
+  if (d==='HUMAN_REVIEW')      return `<span class="badge b-human">Admin reply</span>`;
+  if (d==='NO_REPLY')          return `<span class="badge b-spam">No reply</span>`;
+  if (d==='FLAG_LOW_CONFIDENCE') return `<span class="badge b-flag">Flagged</span>`;
+  return `<span class="badge b-flag">${d}</span>`;
+}
+
+function switchTab(t) {
+  document.querySelectorAll('.tab-btn').forEach((el,i) =>
+    el.classList.toggle('active', ['user','admin','history'][i]===t));
+  document.querySelectorAll('.page').forEach((el,i) =>
+    el.classList.toggle('active', ['page-user','page-admin','page-history'][i]==='page-'+t));
+}
+
+function renderFeed() {
+  const el = document.getElementById('chat-feed');
+  if (!feed.length) { el.innerHTML = '<div style="padding:16px;color:#bbb;font-size:13px;text-align:center">No comments yet — be the first!</div>'; return; }
+  el.innerHTML = feed.map(m => {
+    if (m.type==='user') return `
+      <div class="msg-row">
+        <div class="avatar av-u">U</div>
+        <div class="bubble bubble-u">${esc(m.text)}</div>
+      </div>`;
+    if (m.type==='brand') return `
+      <div class="msg-row out">
+        <div class="avatar av-b">D</div>
+        <div class="bubble bubble-b">${esc(m.text)}</div>
+      </div>`;
+    if (m.type==='pending') return `
+      <div class="msg-row out">
+        <div class="avatar av-b">D</div>
+        <div class="bubble bubble-p">Our team will respond shortly...</div>
+      </div>`;
+    if (m.type==='typing') return `
+      <div class="msg-row out">
+        <div class="avatar av-b">D</div>
+        <div class="bubble bubble-p">
+          <div class="typing-dot"><span></span><span></span><span></span></div>
+        </div>
+      </div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function renderInbox() {
+  const pending = inbox.filter(m => !m.replied);
+  const el      = document.getElementById('inbox-list');
+  document.getElementById('pending-count').textContent = `${pending.length} message${pending.length!==1?'s':''}`;
+  const notif = document.getElementById('inbox-notif');
+  notif.textContent    = pending.length;
+  notif.style.display  = pending.length ? 'inline' : 'none';
+
+  if (!pending.length) { el.innerHTML = '<div class="empty-state">No pending messages</div>'; return; }
+  el.innerHTML = pending.map(m => `
+    <div class="inbox-item${selectedId===m.id?' selected':''}" onclick="selectInbox('${m.id}')">
+      <div class="inbox-meta">
+        <div class="unread-dot"></div>
+        ${badge(m.analysis.emotion)}
+        <span class="inbox-time">${m.time}</span>
+      </div>
+      <div class="inbox-text">${esc(m.text.slice(0,70))}${m.text.length>70?'...':''}</div>
+    </div>`).join('');
+}
+
+function selectInbox(id) {
+  selectedId = id;
+  const m = inbox.find(x => x.id===id);
+  if (!m) return;
+  renderInbox();
+  const a   = m.analysis;
+  const pct = Math.round(a.confidence*100);
+  const dp  = document.getElementById('detail-panel');
+
+  dp.innerHTML = `
+    <div class="panel-header">Message review</div>
+    <div class="detail-body">
+      <div class="section-label">Comment</div>
+      <div class="detail-comment">${esc(m.text)}</div>
+
+      <div class="section-label">Emotion detected</div>
+      <div class="emotion-row">
+        ${badge(a.emotion)}
+        <span style="font-size:12px;color:#888;margin-left:auto">${pct}% confidence</span>
+      </div>
+      <div class="conf-bar"><div class="conf-fill" style="width:${pct}%"></div></div>
+
+      <div class="section-label">Tools used</div>
+      <div class="tools-row" style="margin-bottom:12px">
+        ${a.tools && a.tools.length
+          ? a.tools.map(t=>`<span class="tool-chip">${t}</span>`).join('')
+          : '<span class="tool-chip">model only</span>'}
+      </div>
+
+      ${a.adjustments && a.adjustments.length ? `
+        <div class="section-label">Adjustments made</div>
+        <div class="adj-list" >
+          ${a.adjustments.map(x=>`<div class="adj-item">&bull; ${esc(x.change||x.reason||'')}</div>`).join('')}
+        </div>` : ''}
+
+      <div class="section-label">Reply</div>
+      <textarea class="reply-area" id="reply-text" rows="3">${esc(a.reply||'')}</textarea>
+      <div class="reply-actions">
+        <button class="btn-send" onclick="sendAdminReply('${id}')">Send reply</button>
+      </div>
+    </div>`;
+}
+
+function sendAdminReply(id) {
+  const m = inbox.find(x => x.id===id);
+  if (!m) return;
+  const txt = document.getElementById('reply-text').value.trim();
+  if (!txt) return;
+
+  m.replied   = true;
+  m.replyText = txt;
+
+  const feedMsg = feed.find(f => f.pendingId===id);
+  if (feedMsg) { feedMsg.type='brand'; feedMsg.text=txt; delete feedMsg.pendingId; }
+
+  history.unshift({ id, userText:m.text, replyText:txt, emotion:m.analysis.emotion, decision:'HUMAN_REVIEW', time:m.time });
+
+  selectedId = null;
+  renderFeed();
+  renderInbox();
+  renderHistory();
+  document.getElementById('detail-panel').innerHTML = `
+    <div class="panel-header">Message review</div>
+    <div class="detail-body"><div class="empty-state" style="color:#1D9E75">Reply sent successfully</div></div>`;
+}
+
+function renderHistory() {
+  const el = document.getElementById('hist-list');
+  if (!history.length) { el.innerHTML = '<div class="empty-state" style="padding:32px">No history yet</div>'; return; }
+  el.innerHTML = history.map(h => `
+    <div class="hist-item">
+      <div class="hist-meta">
+        ${badge(h.emotion)}
+        ${decBadge(h.decision)}
+        <span class="hist-time">${h.time}</span>
+      </div>
+      <div class="hist-comment">
+        <span style="color:#aaa;font-size:12px">User: </span>${esc(h.userText)}
+      </div>
+      ${h.replyText
+        ? `<div class="hist-reply"><span style="color:#aaa;font-size:12px">Reply: </span>${esc(h.replyText)}</div>`
+        : `<div class="hist-noreply">No reply sent</div>`}
+    </div>`).join('');
+}
+
+async function postComment() {
+  const input = document.getElementById('user-input');
+  const btn   = document.getElementById('post-btn');
+  const text  = input.value.trim();
+  if (!text) return;
+
+  input.value    = '';
+  input.disabled = true;
+  btn.disabled   = true;
+
+  const id   = 'msg-' + Date.now();
+  const time = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+
+  feed.push({ type:'user', text, id });
+  feed.push({ type:'typing', id: id+'_t' });
+  renderFeed();
+
+  let result;
+  try {
+    const res = await fetch(`${API}/analyze`, {
+      method:  'POST',
+      headers: {'Content-Type':'application/json'},
+      body:    JSON.stringify({ text, language:'bengali', user_id:'demo_user' })
+    });
+    result = await res.json();
+  } catch(e) {
+    feed = feed.filter(f => f.id !== id+'_t');
+    feed.push({ type:'brand', text:'Server error. Please try again.' });
+    renderFeed();
+    input.disabled = btn.disabled = false;
+    return;
+  }
+
+  feed = feed.filter(f => f.id !== id+'_t');
+
+  if (result.decision === 'NO_REPLY') {
+    history.unshift({ id, userText:text, replyText:null, emotion:result.emotion, decision:'NO_REPLY', time });
+    renderFeed(); renderHistory();
+
+  } else if (result.decision === 'AUTO_REPLY') {
+    setTimeout(() => {
+      feed.push({ type:'brand', text: result.reply });
+      history.unshift({ id, userText:text, replyText:result.reply, emotion:result.emotion, decision:'AUTO_REPLY', time });
+      renderFeed(); renderHistory();
+    }, 700);
+
+  } else {
+    feed.push({ type:'pending', pendingId: id });
+    inbox.push({ id, text, analysis: result, time, replied: false });
+    history.unshift({ id, userText:text, replyText:null, emotion:result.emotion, decision:result.decision, time });
+    renderInbox(); renderHistory();
+  }
+
+  renderFeed();
+  input.disabled = btn.disabled = false;
+  input.focus();
+}
+
+renderFeed(); renderInbox(); renderHistory();
+</script>
+</body>
+</html>
