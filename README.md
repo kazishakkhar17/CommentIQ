@@ -267,7 +267,7 @@ Responses are auto-detected as Bengali or English based on character composition
 
 ## Author
 
-**Shakkhar** — built in 5 days, Khulna, Bangladesh
+**Kazi Shakkhar Rahman**
 
 GitHub: [kazishakkhar17](https://github.com/kazishakkhar17)
 
